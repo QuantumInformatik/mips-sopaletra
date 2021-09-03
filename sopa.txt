@@ -1,0 +1,8 @@
+h o l a
+r t y s
+p u t i
+
+
+analisis:
+
+podemos leer cada fila
