@@ -61,7 +61,76 @@ solicitarArchivo:
   	add $t4, $t2, $zero #hacemos una copia
         addi $t5, $t5, 10  # para saber cuando hemos llegado al final de la cadena ingresada por el user
         
+        #remover de la la url o ruta o nombre del archivo el enter \n                
+limpiarArchivo:	
+	lbu $t6, 0($t3)	# $t6, almacena el caracter leido de t3, es decir caracter de la url que limpiaremos
+	beq $t6, $t5, validarArchivo # si (caracter == \n, entonces finalizamos la lectura y validaremos si es un archivo correcto
+	sb $t6, 0($t4) #cpu->memoria, enviamos el caracter leído y diferente de \n a la dirección del archivoLimpio
+	addi $t3, $t3, 1 #avanzamos al siguiente caracter de la url que estamos limpiando
+	addi $t4, $t4, 1 #avanzamos a una posición disponible para guardar el siguiente caracter en archivoLimpio
+	j limpiarArchivo #iteramos	
+	
+limpiarContenido:
+	lbu $t2, 0($t1)	# $t2, almacena el caracter leido de t1, es decir caracter de la fila 
+	beq $t2, $t5, reemplazarCaracter # si (caracter == \r, entonces debemos reemplazar el 13 por el 126
+	beq $t2, $t6, reemplazarCaracter # si (caracter == \r, entonces debemos reemplazar el 13 por el 126
+	beq $t2, $zero, exit # si (caracter == \r, entonces debemos reemplazar el 13 por el 126
+	addi $t1, $t1, 1
+	j limpiarContenido #iteramos	
+
+reemplazarCaracter:
+	sb $t7, 0($t1)
+	addi $t1, $t1, 1
+	j limpiarContenido
+	
+	
+	
+#validamos si la ruta del archivo es correcta			
+validarArchivo:
         
+	li $v0, 13		#abrir archivo, v0 contiene el descriptor del archivo
+	la $a0, archivoLimpio	#a0 = dirección del búfer de entrada (url limpia del archivo que ingresó el usuario)
+	li $a1, 0			#Modo lectura
+	li $a2, 0
+	syscall
+	
+	add $s0, $v0, $zero		#guardamos en s0 el descriptor
+	slt $t1, $v0, $zero		#si (v0 < 0)? t1=1: t1=0;
+	bne $t1, $zero, solicitarArchivo #Si no encuentra el archivo, vuelve a preguntar por archivo, si( t1 != 0) solicitarArchivo
+	
+	#El archivo existe! Copiar datos a memoria
+	#Lectura del archvo
+	li $v0, 14   		# lee datos desde el archivo
+	add $a0, $s0, $zero	# descriptor del archivo a0 = s0
+	la $a1, spaces		# dirección del buffer de entrada (hace referencia a la dirección de memoria donde inicia el contenido 
+	li $a2, 20000		# cantidad masixma de caracteres que serán volcados del archivo a memoria
+	syscall
+	
+	add $s2, $v0, $zero	# guardamos la cantidad de caracteres
+	add $a0, $s0, $zero	# pasamos el descriptor 
+	li $v0, 16		# cerrar archivo
+	syscall			
+	
+	add $s0, $s2, $zero	#Numero de caracteres
+	add $s1, $a1, $zero	#Base del buffer del contenido del archivo
+	add $t1, $s1, $zero	#hacemos una copia para recorrer el buffer
+	
+	addi $t5, $zero, 13  # para saber cuando hemos llegado al final de la fila
+	addi $t6, $zero, 10
+	addi $t7, $zero, 126  # para saber cuando hemos llegado al final de la fila
+
+	j limpiarContenido
+	# cambiar \n\r por ~ 126
+
+	
+	
+#contarCaracteres:
+#	lbu $t2, 0($t1)		#$t2 = $s0[$t1]
+#	beq $t2, $zero, inicializacion	#Si $t2 = '\0' terminar de contar
+#	addi $t1, $t1, 1	#$t1 = $t1 + 1
+#	addi $s0, $s0, 1	#$s0 = $s0 + 1, contador de caracteres
+#	j contarCaracteres
+
         
         
         exit: 	li $v0, 10		# Constante para terminar el programa

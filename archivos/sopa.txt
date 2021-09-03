@@ -2,7 +2,38 @@ h o l a
 r t y s
 p u t i
 
-
+C:\Config\MIPSasm\archivos\sopaE.txt
 analisis:
 
-podemos leer cada fila
+podemos leer todo el archivo y delimitar de la siguiente forma:
+
+una fila de 4 caracteres tendría 3 espacios y 10 13 o \n\r o 0a 0d al final de la fila
+
+la ultima fila tendría 3 espacios, pero no tendría \n\r
+
+por tanto la matriz se puede definir, asumiendo lo anterior, de esta manera:
+
+limpar matriz: cambiar los \n\r por simbolo diferencial fila.
+los simbolos que puede usar serían comprendidos entre 33 y 64 de la tabla ascii o 123-126 de la misma...
+
+su fila lucirá así:
+h o l a~~
+r t y s~~
+p u t i
+
+1617 1819 2021 2223 24
+2526 2728 2930 3132 33
+3435 3637 3839 40\0 
+
+
+formula para movernos vertical: caracteresFila+cantidadEspacios+simbolo
+horizontal: numeroCaracteresEntreCaracteres = 2
+
+
+ahora para recorrer su fila basta con implementar un for limitando con el caracterter 126 (~)
+
+es decir, suponga que la palabra a buscar en la sopa de letra inicia con letra t, en ese caso su bucle  de columna recorrerá cada caracter de la fila 1 hasta llegar al caracter 126, una vez llegué ahí, debe cambiar al bucle de fila, para pasar a la fila siguiente y buscar la letra t. 
+
+¿qué pasa si encuentro la letra t?
+
+debe 
