@@ -3,6 +3,9 @@ r t y s
 p u t i
 
 C:\Config\MIPSasm\archivos\sopaE.txt
+C:\Config\MIPSasm\archivos\sopaPlana.txt
+C:\Config\MIPSasm\archivos\sopa3x3.txt
+
 analisis:
 
 podemos leer todo el archivo y delimitar de la siguiente forma:
@@ -37,3 +40,29 @@ es decir, suponga que la palabra a buscar en la sopa de letra inicia con letra t
 ¿qué pasa si encuentro la letra t?
 
 debe 
+
+
+--------------
+
+
+formula para calcular cantidad de caracteres
+
+N = cantidad de caracteres
+f = cantidad de filas
+c = cantidad de columnas
+e = cantidad de espacios por fila
+trn = filas terminadas en \r\n
+crn = trn*2
+
+e = (c-1)*f
+trn = f-1
+crn = trn*2
+N = crn + e + f*c
+
+
+N = (f)*(c+(c-1))+(f-1)*2
+N = 2fc+f-2
+N = f(2c+1)-2
+
+
+

@@ -1,12 +1,23 @@
 .data 
 .align 2
-buffer: .space 20000 # dirección de las palabras que escribirá el usuario
+bufferPalabra: .space 100 # dirección de las palabras que escribirá el usuario
 .align 2
 archivo: .space 1024	# dirección de la url del archivo ingresada por el user
 .align 2
 archivoLimpio: .space 1024 #Dirección del archivo ingresado por el user pero sin el \n
 .align 2
-archivoSalida:	.asciiz  "archivoSalida.txt"     	# Archivo de salida
+DERECHA: .asciiz "La palabra está hacia la derecha"
+.align 2
+IZQUIERDA: .asciiz "La palabra está hacia la izquierda"
+.align 2
+ARRIBA: .asciiz "La palabra está hacia la arriba"
+.align 2
+ABAJO	: .asciiz "La palabra está hacia la abajo"
+
+.align 2
+dondeEstan	: .asciiz "La palabra inicia en: "
+fila	: .asciiz "fila: "
+columna	: .asciiz "columna: "
 
 
 .align 2
@@ -14,7 +25,7 @@ bufferSalida: .space 69 #
 
 
 #mensajes 
-pedirPlabras: .asciiz "\n Ingrese separadas por coma y sin espacio (palabra1,palabra2,palabran,)\n las palabras:\n "
+pedirPlabras: .asciiz "\n Ingrese la palabra a buscar en la sopa de letras:\n "
 pedirArchivo: .asciiz "\n Ingrese ruta del archivo: \n"
 mensajeAparicion1: .asciiz " aparece en el archivo "
 mensajeAparicion2: .asciiz " veces.\n"
@@ -30,12 +41,13 @@ spaces: .asciiz ""     #aquí se almacenan los caracteres leidos del archivo.
 
 # Subrutina: main (Inicio del Programa)
 main:
-	jal	mainMenu # rutina principal, jump and link
+	jal	mainMenu # rutina principal, jump and link 
 	j 	exit    
 # Subrutina: menu principal
 mainMenu:
 	addi $sp, $sp, -4	#Copia de seguridad de la dirección de la función que llama, para devolvernos en dado caso
 	sw $ra, 0($sp)
+
          
 #solicitamos al usuario que ingrese la ruta del archivo
 solicitarArchivo: 
@@ -87,6 +99,9 @@ reemplazarCaracter:
 	
 #validamos si la ruta del archivo es correcta			
 validarArchivo:
+        add $t3, $zero, $zero		#reiniciamos, antes aquí estaba la copia del archivo sucio
+	add $t4, $zero, $zero		#reiniciamos, antes aqui estaba la copia del archivo limpio
+	add $s4, $t2, $zero		#guardamos la dirección del archivo de la sopa de letras INMUTABLE
         
 	li $v0, 13		#abrir archivo, v0 contiene el descriptor del archivo
 	la $a0, archivoLimpio	#a0 = dirección del búfer de entrada (url limpia del archivo que ingresó el usuario)
@@ -112,28 +127,177 @@ validarArchivo:
 	syscall			
 	
 	add $s0, $s2, $zero	#Numero de caracteres
-	add $s1, $a1, $zero	#Base del buffer del contenido del archivo
-	add $t1, $s1, $zero	#hacemos una copia para recorrer el buffer
+	add $s1, $a1, $zero	#Base del buffer del contenido del archivo INMUTABLE
+	add $t1, $s1, $zero	#hacemos una copia del contenido para recorrer el buffer
 	
 	addi $t5, $zero, 13  # para saber cuando hemos llegado al final de la fila
-	addi $t6, $zero, 10
-	addi $t7, $zero, 126  # para saber cuando hemos llegado al final de la fila
+	
 
-	j limpiarContenido
+	#j limpiarContenido
 	# cambiar \n\r por ~ 126
 
+solicitarPalabras:	
+	#Iniciando temporales en 0 para volver a leer palabras en caso de incumplir			
+	add $t0, $zero, $zero	
 	
-	
-#contarCaracteres:
-#	lbu $t2, 0($t1)		#$t2 = $s0[$t1]
-#	beq $t2, $zero, inicializacion	#Si $t2 = '\0' terminar de contar
-#	addi $t1, $t1, 1	#$t1 = $t1 + 1
-#	addi $s0, $s0, 1	#$s0 = $s0 + 1, contador de caracteres
-#	j contarCaracteres
+	li $v0, 4		# print string, $a0 = dirección de cadena terminada en nulo para imprimir
+	la $a0,	pedirPlabras	# Mensaje para pedir las palabras
+	syscall			# para que se ejecute el llamado al sistema
 
+	li $v0, 8 		#read string,  
+        la $a0, bufferPalabra		#$a0 = dirección del búfer de entrada (la dirección de "buffer" apuntará a las palabras)
+        li $a1, 100		#$a1 = número máximo de caracteres para leer
+        syscall
+       
+        la $t0, bufferPalabra		#guardamos la dirección la dirección de memoria en el cpu, en el registro $t0	
+        add $s3, $t0, $zero		#hacemos copia de la dirección en memoria de la palabra que bsucaremos INMUTABLE
+	
+	lbu $t4, 0($t0)  # cargamos la letra de la palabra a buscar
+	addi $s0, $zero, 1	# filas
+	addi $s2, $zero, 1	#columna
+bucleFila:
+	   
+	lbu $t3, 0($t1)	# $t3, almacena el caracter leido de t2, es decir caracter de la fila de la sopa de letras	
+	beq $t3, $t5, cambiarFila # si (caracter == \r, entonces debemos pasar a la fila de abajo
+	beq $t3, $zero, exit # si (caracter == \0, entonces debemos finalizar
+	beq $t3, $t4, calcularIndiceMovimiento
+	addi $t1, $t1, 2
+	addi $s2, $s2, 1
+	#addi $t0, $t0, 1
+	j bucleFila #iteramos	    
         
+ cambiarFila:
+ 	addi $t1, $t1, 2
+ 	addi $s0, $s0, 1	#aumenta fila
+ 	addi $s2, $zero, 1	# reinciia columna
+ 	j bucleFila
         
-        exit: 	li $v0, 10		# Constante para terminar el programa
+ calcularIndiceMovimiento: #se asume que es un valor constante
+ 	addi $t6, $zero, 9 	#desplazamiento vertical
+ 	addi $t7, $zero, 2 	# desplazameinto horizontal
+ 	
+ 	add $t5, $zero, $t1
+ 
+ movernos:
+ 	
+ 	jal movernosDerecha
+ 	bne $s6, $zero,  finalizar
+ 	jal movernosIzquierda
+ 	bne $s6, $zero,  finalizar
+ 	j bucleFila
+ 	#jal movernosArriba
+ 	#jal movernosAbajo
+
+ finalizar: #esta rutina puede hacer cualquier cosa, ejemplo, puede solicitar nuevmante palabras.
+ 	j solicitarPalabras	
+ 	
+movernosDerecha:
+	addi $sp, $sp, -4 # Reserva 2 palabras en pila (8 bytes)			
+	sw $ra, 0($sp) # guarda ra 
+	
+	addi $t0, $t0, 1	#aumentamos en la palabra  a buscar
+ 	lbu $t9, 0($t0)		#caracter siguiente de la palabra a buscar
+ 	add $t1, $t1, $t7	#aumentamos en la sopa de letra  horizontalmente
+ 	lbu $t8, 0($t1)		#caracter siguiente en la sopa de letra hacia la derecha.
+ 	
+ 	
+ 	jal comprobarFinal
+ 	lw $ra, 0($sp) # restaurar ra
+	addi $sp, $sp, 4
+ 
+ 	
+ 	bne $s6, $zero, detallePalabra  	#hemos encontrado toda la palabra por la derecha
+ 	
+ 	beq $t8, $t9, movernosDerecha
+ 	
+ 			
+ reiniciarIndices:
+ 	add $t1, $t5, $zero	#volvemos t1 a su posición orginal de descubrimiento.
+ 	add $t0, $s3, $zero	#volvemos a t0 a su posición inciial, e.g, la primera letra
+
+ 	jr $ra
+ movernosIzquierda: 
+ 	addi $sp, $sp, -4 	# Reserva 2 palabras en pila (8 bytes)			
+	sw $ra, 0($sp) 		# guarda ra 
+	
+	
+	
+	addi $t0, $t0, 1	#aumentamos en la palabra  a buscar
+ 	lbu $t9, 0($t0)		#caracter siguiente de la palabra a buscar
+ 	sub  $t1, $t1, $t7	#aumentamos en la sopa de letra  horizontalmente
+ 	lbu $t8, 0($t1)		#caracter siguiente en la sopa de letra hacia la derecha.
+ 	 
+ 	
+ 	jal comprobarFinal	# si ya hemos recorrido toda la palabra
+ 	lw $ra, 0($sp) 		# restaurar ra
+	addi $sp, $sp, 4
+ 
+ 	
+ 	bne $s6, $zero, detallePalabra  	#hemos encontrado toda la palabra por la derecha
+ 	
+ 	beq $t8, $t9, movernosIzquierda
+ 	j reiniciarIndices
+ 
+ movernosArriba:
+ 	addi $sp, $sp, -4 	# Reserva 2 palabras en pila (8 bytes)			
+	sw $ra, 0($sp) 		# guarda ra 
+
+	addi $t0, $t0, 1	#aumentamos en la palabra  a buscar
+ 	lbu $t9, 0($t0)		#caracter siguiente de la palabra a buscar
+ 	add  $t1, $t1, $t9	#aumentamos en la sopa de letra  verticalmente
+ 	lbu $t8, 0($t1)		#caracter siguiente en la sopa de letra hacia la derecha.
+ 	
+ 	
+ 	jal comprobarFinal
+ 	lw $ra, 0($sp) # restaurar ra
+	addi $sp, $sp, 4
+ 
+ 	
+ 	bne $s6, $zero, detallePalabra  	#hemos encontrado toda la palabra por la derecha
+ 	
+ 	beq $t8, $t9, movernosArriba
+ 	j reiniciarIndices
+ 
+comprobarFinal:
+
+	bne $t9, 10, lanzarJr
+	# llegamos al final de la palabra a buscar, es decir, la encontramos. 
+	addi $s6, $zero, 1
+	jr $ra	
+	
+ detallePalabra:
+ 	li $v0, 4
+ 	la $a0, dondeEstan
+ 	syscall
+ 	
+ 	li $v0, 4
+ 	la $a0, fila
+ 	syscall
+ 	
+ 	li $v0, 1
+ 	la $a0, ($s0)
+ 	syscall
+ 	
+ 	li $v0, 4
+ 	la $a0, columna
+ 	syscall
+ 	
+ 	li $v0, 1
+ 	la $a0, ($s2)
+ 	syscall
+ 	
+ 	j reiniciarIndiceCero
+
+ reiniciarIndiceCero: 
+ 	add $t1, $s1, $zero	#volvemos t1 a su posición incial
+ 	add $t0, $s3, $zero	#volvemos a t0 a su posición inciial, e.g, la primera letra
+	jr $ra
+     
+lanzarJr:
+	addi $s6, $zero, 0
+	jr $ra
+                      
+ exit: 	li $v0, 10		# Constante para terminar el programa
 	syscall
         
         

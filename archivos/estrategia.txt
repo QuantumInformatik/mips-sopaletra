@@ -1,0 +1,115 @@
+estrategia: 
+
+matriz como cadena:
+h o l a1310r t y s1310p u t i00
+
+palabra a buscar: asi
+
+iniciar indices para recorrer matriz. 
+primera letra de la matriz, y, primera letra de la palabra a buscar
+
+#bucleFila{
+    recorrera la cadena
+    si es igual a \r, cambiamos de fila sumando 2. 
+    si nes igual a \0 (hemos recorrido ultimo elemento de la matriz), finalizar de algun modo.
+    hasta encontrar una coincidencia de la letra inicial de la palabra a buscar, al encontrarla saltar a #calcularIndicesMovimiento
+}
+
+
+#cambiarFila{
+    aumentamos el puntero de la cadena en 2,
+    volvemos al bucle fila.
+}
+
+
+#calcularIndicesMovimiento{
+    calculara indices horizontales y verticales de acuerdo al coeficiente horizontal y vertical.
+
+    coeficiente vertical: cantidad de caracteres en fila (100) + cantidad de espacios en fila(100-1) + cantidad de simbolos (\r\n es decir 2)
+
+    para nuestro ejemplo sería: 
+    coeficienteVertical= 4+3+2 = 9
+
+    coeficiente horizontal: cantidad de caracteres entre caracteres e.g fila(1) = (h o l a1310), de la "h" a la "o" debo avanzar dos veces, el primer avance llego a la posición del caracter espacio 
+    y al segundo a la posición del caracter "o". 
+    coeficienteHorizontal = 2
+
+    sabiendo los coeficientes, podemos calcular la posición de otras letras en las 4 direcciones
+
+    saltamos a #movernos
+}
+
+#movernos{
+    
+    agregamos en un registro temporal ($t9) el valor de la siguiente letra de la palabra a buscar.
+    luego podemos obtener la posición de la cadena hacia la derecha (coeficiente horizontal + nuestra posición) y su valor y lo guardamos en $t8
+    comparamos si t8 == t9, si es igual, saltamos a #movernosDerecha esperando un valor de return guardado en t7
+
+    si el valor de t7 es R quiere decir que hacia la derecha obtuvimos toda la palabra
+    si el valor es diferente de 0 entonces saltanamos sin retorno a #detallePalabra
+
+    sino, continuamos
+
+    agregamos en un registro temporal ($t9) el valor de la siguiente letra de la palabra a buscar.
+    luego podemos obtener la posición de la cadena hacia la izquierda (coeficiente horizontal - nuestra posición) y su valor y lo guardamos en $t8
+    comparamos si t8 == t9, si es igual, saltamos a #movernosIzquierda esperando un valor de return guardado en t7
+
+    si el valor de t7 es L quiere decir que hacia la izquierda obtuvimos toda la palabra
+    si el valor es diferente de 0 entonces saltanamos sin retorno a #detallePalabra
+
+    sino, continuamos
+
+    agregamos en un registro temporal ($t9) el valor de la siguiente letra de la palabra a buscar.
+    luego podemos obtener la posición de la cadena hacia la izquierda (coeficiente vertical + nuestra posición) y su valor y lo guardamos en $t8
+    comparamos si t8 == t9, si es igual, saltamos a #mvernosArriba esperando un valor de return guardado en t7
+
+    si el valor de t7 es U quiere decir que hacia la ARRIBA obtuvimos toda la palabra
+    si el valor es diferente de 0 entonces saltanamos sin retorno a #detallePalabra
+
+    sino, continuamos
+
+    agregamos en un registro temporal ($t9) el valor de la siguiente letra de la palabra a buscar.
+    luego podemos obtener la posición de la cadena hacia la izquierda (coeficiente vertical + nuestra posición) y su valor y lo guardamos en $t8
+    comparamos si t8 == t9, si es igual, saltamos a #mvernosArriba esperando un valor de return guardado en t7
+
+    si el valor de t7 es D quiere decir que hacia la ABAJO obtuvimos toda la palabra
+    si el valor es diferente de 0 entonces saltanamos sin retorno a #detallePalabra
+
+    sino, continuamos
+
+    -- al llegar aquí es porque la palabra no la encontramos por ninguna dirección en esa coincidencia de la primera letra
+    debemos avanzar al siguiente elemento de la fila
+    y saltamos a #bucleFila
+
+
+
+
+
+}
+
+#detallePalabra{
+    muestra el datelle: la posición en f,c y la dirección de lectura. 
+}
+
+#movernosDerecha{
+    aumentamos los valres de t9 y t8, para obtener las siguientes letras.
+    comparamos si t8 == t9, si es igual, saltamos a #movernosDerecha
+    sino es igual, reiniciamos indices #reiniciarIndices con return
+    t7 = 0
+    return 
+}
+
+
+
+#reiniciarIndices{
+    Al reiniciar garantizamos que volvamos a tener nuestros punteros en la posición inicial de la palabra a buscar pero en la sopa de letras.
+    return
+
+}
+
+
+
+
+
+
+
