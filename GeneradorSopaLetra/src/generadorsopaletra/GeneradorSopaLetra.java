@@ -35,9 +35,12 @@ public class GeneradorSopaLetra {
 
             for (int j = 0; j < columna; j++) {
                 do {
-                    caracteerEntero = (ALEATORIO.nextInt(90 - 65 + 1) + 65);
+                    caracteerEntero = (ALEATORIO.nextInt(90 - 65 + 1) + 65); //genera enteros entre 65 y 91, es decir genera letras MAYUSCULAS de la A  a la Z
+                    /*
+                    para generar letras de la "a" a la "z" minusculas use:  (ALEATORIO.nextInt(122 - 97 + 1) + 97);
+                    */
 
-                } while (!(caracteerEntero >= 65 && caracteerEntero <= 90));
+                } while (!(caracteerEntero >= 65 && caracteerEntero <= 90)&&!(caracteerEntero >= 97 && caracteerEntero <= 122));
                 caracterAleatorio = (char) caracteerEntero;
                 if ((j + 1) == columna) {
                     if ((i + 1) == fila) {

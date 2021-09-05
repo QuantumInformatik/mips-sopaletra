@@ -1,3 +1,5 @@
 Mars4_5.jar
 /GeneradorSopaLetra/nbproject/private/
 *.class
+/GeneradorSopaLetra/build/
+/GeneradorSopaLetra/dist/
