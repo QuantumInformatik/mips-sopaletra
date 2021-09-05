@@ -81,9 +81,7 @@ limpiarArchivo:	 						# remover de la la url o ruta o nombre del archivo el ent
 	addi $t3, $t3, 1 					# avanzamos al siguiente caracter de la url que estamos limpiando
 	addi $t4, $t4, 1 					# avanzamos a una posici�n disponible para guardar el siguiente caracter en archivoLimpio
 	j limpiarArchivo					# iteramos	
-	
-
-	
+		
 	
 validarArchivo:							# validamos si la ruta del archivo es correcta			
 
@@ -119,7 +117,8 @@ validarArchivo:							# validamos si la ruta del archivo es correcta
 	add $s2, $a1, $zero					# Base del buffer del contenido del archivo INMUTABLE
 	add $t0, $s2, $zero					# hacemos una copia del contenido para recorrer el buffer
 	
-	addi $t5, $zero, 13  				# para saber cuando hemos llegado al final de la fila
+	addi $t5, $zero, 13  					# para saber cuando hemos llegado al final de la fila
+	
 	# addi $sp, $sp, -8					# pedimos 8 bytes para realizar una copia de seguridad
 	# sw $s4, 0($sp)					# guardamos en la pila la dirección de la url del archivo limpio
 	# sw $s5, 4($sp)					# guardamos en la pila la dirección de la cantidad de caracteres
@@ -150,11 +149,12 @@ solicitarPalabras:
 
 bucleFila:
 	   
-	lbu $t3, 0($t0)						# $t3, almacena el caracter leido de t0, es decir caracter de la fila de la sopa de letras	
-	beq $t3, 10, cambiarFila 			# si (caracter == \n, entonces debemos pasar a la fila de abajo
+	lbu $t3, 0($t0)						# $t3, almacena el caracter leido de t0, es decir caracter de la fila de la sopa de letras
+	#beq $t3, 13, cambiarFila 			# si (caracter == \r, entonces debemos pasar a la fila de abajo	
+	beq $t3, 10, cambiarFila 			# si (caracter == \n, entonces debemos pasar a la fila de abajo	
 	beq $t3, $zero, exit 				# si (caracter == \0, entonces debemos finalizar
 	beq $t3, $t4, calcularIndiceMovimiento
-	addi $t0, $t0, 2
+	addi $t0, $t0, 1
 	addi $s1, $s1, 1				# aumentar columna
 	j bucleFila 						# iteramos	    
         
