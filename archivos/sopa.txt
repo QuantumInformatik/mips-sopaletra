@@ -6,6 +6,32 @@ C:\Config\MIPSasm\archivos\sopaE.txt
 C:\Config\MIPSasm\archivos\sopaPlana.txt
 C:\Config\MIPSasm\archivos\sopa3x3.txt
 
+fila = s0
+columna = s1
+contenido archivo = s2
+palabra buscada = s3
+url archivo limpio= s4
+cantidad caracteres = s5
+
+
+t0 = s2 contenido archivo
+t1 = s3  palabra buscada 
+t2 = dircción de descubrimiento
+
+t3 = itera sopa de letras
+t4 = itera letras de la palabra a buscar
+
+
+$t5 = caracter \r o 13
+t6 =  9 vertical
+t7 = 2 horizontal
+
+t8 = caracter siguiente en la sopa letra
+t9 = caracter siguiente en la palabra a buscar
+
+
+
+
 analisis:
 
 podemos leer todo el archivo y delimitar de la siguiente forma:

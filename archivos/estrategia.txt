@@ -2,20 +2,26 @@ estrategia:
 
 matriz como cadena:
 h o l a1310r t y s1310p u t i00
+h o l a\r\nr t y s\r\np u t i
 
 palabra a buscar: asi
+
+#solicitarPalabra{
+    ingrese otra palabra a buscar en la sopa de letras. 
+}
 
 iniciar indices para recorrer matriz. 
 primera letra de la matriz, y, primera letra de la palabra a buscar
 
 #bucleFila{
-    recorrera la cadena
+    recorrera la sopa de letras
     si es igual a \r, cambiamos de fila sumando 2. 
     si nes igual a \0 (hemos recorrido ultimo elemento de la matriz), finalizar de algun modo.
     hasta encontrar una coincidencia de la letra inicial de la palabra a buscar, al encontrarla saltar a #calcularIndicesMovimiento
 }
 
 
+C:\Config\MIPSasm\archivos\sopaE.txt
 #cambiarFila{
     aumentamos el puntero de la cadena en 2,
     volvemos al bucle fila.
@@ -89,6 +95,7 @@ primera letra de la matriz, y, primera letra de la palabra a buscar
 
 #detallePalabra{
     muestra el datelle: la posición en f,c y la dirección de lectura. 
+    saltamos a #solicitarPalabra
 }
 
 #movernosDerecha{
