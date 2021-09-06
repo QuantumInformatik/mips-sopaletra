@@ -1,7 +1,7 @@
 estrategia: 
 
 matriz como cadena:
-h o l a1310r t y s1310p u t i00
+h o l a\r10r t y s1310p u t i00
 h o l a\r\nr t y s\r\np u t i
 
 palabra a buscar: asi

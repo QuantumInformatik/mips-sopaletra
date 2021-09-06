@@ -4,7 +4,7 @@ p u t i
 
 C:\Config\MIPSasm\archivos\sopaE.txt
 C:\Config\MIPSasm\archivos\sopaPlana.txt
-C:\Config\MIPSasm\archivos\sopa3x3.txt
+C:\Config\MIPSasm\archivos\sopaJava.txt
 
 fila = s0
 columna = s1

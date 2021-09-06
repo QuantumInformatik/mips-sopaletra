@@ -27,14 +27,7 @@ bufferSalida: .space 69 #
 #mensajes 
 pedirPlabras: .asciiz "\n Ingrese la palabra a buscar en la sopa de letras:\n "
 pedirArchivo: .asciiz "\n Ingrese ruta del archivo: \n"
-mensajeAparicion1: .asciiz " aparece en el archivo "
-mensajeAparicion2: .asciiz " veces.\n"
 
-mensaje1: .asciiz "\n retorno aqu�"
-
-
-cons1:  .word 32							# Caracter de espacio
-cons2:  .word 13							# Caracter: Carriage Return
 
 spaces: .asciiz ""     #aqu� se almacenan los caracteres leidos del archivo.
 .text
@@ -130,6 +123,8 @@ validarArchivo:								# validamos si la ruta del archivo es correcta
 solicitarPalabras:	
 													
 	add $t1, $zero, $zero						# Iniciando temporales en 0 para volver a leer palabras en caso de incumplir
+
+	
 	
 	li $v0, 4							# print string, $a0 = direcci�n de cadena terminada en nulo para imprimir
 	la $a0,	pedirPlabras						# Mensaje para pedir las palabras
@@ -154,7 +149,7 @@ bucleFila:
 	beq $t3, 10, cambiarFila 					# si (caracter == \n, entonces debemos pasar a la fila de abajo	
 	beq $t3, $zero, exit 						# si (caracter == \0, entonces debemos finalizar
 	beq $t3, $t4, calcularIndiceMovimiento
-	addi $t0, $t0, 1
+	addi $t0, $t0, 2
 	addi $s1, $s1, 1						# aumentar columna
 	j bucleFila 							# iteramos	    
         
@@ -173,10 +168,12 @@ calcularIndiceMovimiento: 						# se asume que es un valor constante
 movernos:
  	
  	jal movernosDerecha
- 	bne $s6, $zero,  finalizar
+ 	bne $s6, $zero,  finalizar					# la encontro por la derecha
  	jal movernosIzquierda
  	bne $s6, $zero,  finalizar
- 	j bucleFila
+ 	
+ 	#terminar y mostrar un mensaje de no se encuentra la palabra en la sopa de letras. 
+ 	j solicitarPalabras
  	#jal movernosArriba
  	#jal movernosAbajo
 
