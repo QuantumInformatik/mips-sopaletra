@@ -120,7 +120,7 @@ validarArchivo:								# validamos si la ruta del archivo es correcta
 	li $v0, 14   							# lee datos desde el archivo
 	add $a0, $s0, $zero						# descriptor del archivo a0 = s0
 	la $a1, spaces							# direcci�n del buffer de entrada (hace referencia a la direcci�n de memoria donde inicia el contenido 
-	li $a2, 20100							# cantidad masixma de caracteres que ser�n volcados del archivo a memoria
+	li $a2, 20400							# cantidad masixma de caracteres que ser�n volcados del archivo a memoria
 	syscall
 	
 	add $s5, $v0, $zero						# guardamos la cantidad de caracteres INMUTABLE
