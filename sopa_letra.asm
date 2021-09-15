@@ -1,6 +1,13 @@
 .data 
+
+.align 2
+cons1:  .asciiz "y"	# Caracter de y
+.align 2
+cons2:  .asciiz "n"	# Caracter de n
 .align 2
 bufferPalabra: .space 100 						# direcciï¿½n de las palabras que escribirï¿½ el usuario
+.align 2
+bufferBuscarPalabra: .space 3						# direccion de la respuesta a la pregunta de si quiere buscar otra palabra (y o n)
 .align 2
 archivo: .space 1024							# direcciï¿½n de la url del archivo ingresada por el user
 .align 2
@@ -21,10 +28,14 @@ fila	: .asciiz "\n fila: "
 .align 2
 columna	: .asciiz "\n columna: "
 .align 2
-noEncontrada: : .asciiz "\n No se encontro la palabra "
+noEncontrada : .asciiz "\n No se encontro la palabra\n"
 .align 2
-buscarOtra: : .asciiz "\n Quieres buscar otra Palabra?"
+buscarOtra : .asciiz "\n Quieres buscar otra Palabra?\ny. ppara continuar buscando palabras\nn. para no buscar mas palabras\n"
 
+.align 2
+programaFinaliza : .asciiz "El programa finalizará su ejcucion...\n"
+.align 2
+opcionesValidas : .asciiz "\nElige una opción valida (y o n)\n"
 
 .align 2
 bufferSalida: .space 69 # 
@@ -38,6 +49,8 @@ pedirArchivo: .asciiz "\n Ingrese ruta del archivo: \n"
 
 .align 2
 spaces: .asciiz ""     #aquï¿½ se almacenan los caracteres leidos del archivo.
+
+
 .text
 
 main: 									# Subrutina: main (Inicio del Programa)
@@ -107,7 +120,7 @@ validarArchivo:								# validamos si la ruta del archivo es correcta
 	li $v0, 14   							# lee datos desde el archivo
 	add $a0, $s0, $zero						# descriptor del archivo a0 = s0
 	la $a1, spaces							# direcciï¿½n del buffer de entrada (hace referencia a la direcciï¿½n de memoria donde inicia el contenido 
-	li $a2, 20000							# cantidad masixma de caracteres que serï¿½n volcados del archivo a memoria
+	li $a2, 20100							# cantidad masixma de caracteres que serï¿½n volcados del archivo a memoria
 	syscall
 	
 	add $s5, $v0, $zero						# guardamos la cantidad de caracteres INMUTABLE
@@ -194,7 +207,7 @@ movernos:
  	#jal movernosAbajo cambiarColumna
 
 finalizar: 								# esta rutina puede hacer cualquier cosa, ejemplo, puede solicitar nuevmante palabras.
- 	j solicitarPalabras	
+ 	j pedirMasPalabras	
  	
 movernosDerecha:
 	addi $sp, $sp, -4 						# Reserva 2 palabras en pila (8 bytes)			
@@ -296,26 +309,73 @@ noFinalPalabraBuscada:
 	addi $s6, $zero, 0						# hacemos esto 0 dado que no hemos llegado al final
 	jr $ra
                       
-exit: 	li $v0, 10							# Constante para terminar el programa
-	syscall
 
-palabraNoEncontrada:	li $v0, 4
+
+palabraNoEncontrada:	
+		
+		li $v0, 4
  		la $a0, noEncontrada
  		syscall
  		
- 		li $v0, 4
+pedirMasPalabras:	addi $sp, $sp, -20 						# Reserva 2 palabras en pila (8 bytes)			
+		sw $s3, 0($sp) 
+		sw $t1, 4($sp)
+		sw $t2, 8($sp)
+		sw $t3, 12($sp)
+		sw $t6, 16($sp)
+		
+		li $v0, 4						# pregunta si quiere buscar otra palabra
  		la $a0, buscarOtra
  		syscall
  		
  		li $v0, 8 							# read string,  
-    		la $a0, bufferPalabra						# $a0 = direcciï¿½n del bï¿½fer de entrada (la direcciï¿½n de "buffer" apuntarï¿½ a las palabras)
-    		li $a1, 100							# $a1 = nï¿½mero mï¿½ximo de caracteres para leer
+    		la $a0, bufferBuscarPalabra					# $a0 = direcciï¿½n del bï¿½fer de entrada (la direcciï¿½n de "buffer" apuntarï¿½ a las respuesta)
+    		li $a1, 3							# $a1 = nï¿½mero mï¿½ximo de caracteres para leer
     		syscall
        
-    		la $t1, bufferPalabra						# guardamos la direcciï¿½n la direcciï¿½n de memoria en el cpu, en el registro $t1	
-    		add $s3, $t1, $zero	
+    		la $t1, bufferBuscarPalabra					# guardamos la direcciï¿½n la direcciï¿½n de memoria en el cpu, en el registro $t1	
+    		add $s3, $t1, $zero
+    		lb $t6, 0($t1)
+
+    		
+    		lb $t2, cons1		# Cargo el valor de y en la variable temporal $t2
+		lb $t3, cons2		# Cargo el valor de n en la variable temporal $t3
+		
+		beq $t6, $t2, continuarBuscandoPalabras
+		bne $t6, $t2, opcionInvalida
+		li $v0, 4
+ 		la $a0, programaFinaliza
+ 		syscall
+ 		
+ 		j exit
+ 
+opcionInvalida: 	li $v0, 4			# alerta de una opción invalida
+ 		la $a0, opcionesValidas
+ 		syscall
+ 		
+ 		lw $s3, 0($sp) 
+    		lw $t1, 4($sp) 
+    		lw $t2, 8($sp) 
+    		lw $t3, 12($sp) 
+    		lw $t6, 16($sp) 							# restaurar ra
+		addi $sp, $sp, 20  
+ 		
+ 		j pedirMasPalabras
+
+				
+continuarBuscandoPalabras:
+					
+    		lw $s3, 0($sp) 
+    		lw $t1, 4($sp) 
+    		lw $t2, 8($sp) 
+    		lw $t3, 12($sp) 
+    		lw $t6, 16($sp) 							# restaurar ra
+		addi $sp, $sp, 20  
+		add $t0, $s2, $zero
+		j solicitarPalabras  			
         
-        
+exit: 	li $v0, 10						# Constante para terminar el programa
+	syscall      
         
         
         
