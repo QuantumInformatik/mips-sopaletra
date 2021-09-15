@@ -16,8 +16,14 @@ ABAJO	: .asciiz "La palabra est� hacia la abajo"
 
 .align 2
 dondeEstan	: .asciiz "La palabra inicia en "
+.align 2
 fila	: .asciiz "\n fila: "
+.align 2
 columna	: .asciiz "\n columna: "
+.align 2
+noEncontrada: : .asciiz "\n No se encontro la palabra "
+.align 2
+buscarOtra: : .asciiz "\n Quieres buscar otra Palabra?"
 
 
 .align 2
@@ -25,10 +31,12 @@ bufferSalida: .space 69 #
 
 
 #mensajes 
+.align 2
 pedirPlabras: .asciiz "\n Ingrese la palabra a buscar en la sopa de letras:\n "
+.align 2
 pedirArchivo: .asciiz "\n Ingrese ruta del archivo: \n"
 
-
+.align 2
 spaces: .asciiz ""     #aqu� se almacenan los caracteres leidos del archivo.
 .text
 
@@ -145,18 +153,24 @@ solicitarPalabras:
 bucleFila:
 	   
 	lbu $t3, 0($t0)							# $t3, almacena el caracter leido de t0, es decir caracter de la fila de la sopa de letras
-	#beq $t3, 13, cambiarFila 					# si (caracter == \r, entonces debemos pasar a la fila de abajo	
+	beq $t3, 13, cambiarFila 					# si (caracter == \r, entonces debemos pasar a la fila de abajo	
 	beq $t3, 10, cambiarFila 					# si (caracter == \n, entonces debemos pasar a la fila de abajo	
-	beq $t3, $zero, exit 						# si (caracter == \0, entonces debemos finalizar
+	beq $t3, $zero, palabraNoEncontrada 						# si (caracter == \0, entonces es que hemos recorrido toda la sopa de letras y no hallamos la palabra
 	beq $t3, $t4, calcularIndiceMovimiento
-	addi $t0, $t0, 2
+	addi $t0, $t0, 1
+	lbu $t3, 0($t0)
+	beq $t3, 32, bucleFila
 	addi $s1, $s1, 1						# aumentar columna
-	j bucleFila 							# iteramos	    
+	j bucleFila 						# iteramos	    
         
 cambiarFila:
- 	addi $t0, $t0, 1						#aumentamos a la "otra fila", se asume que esta despues del enter
+ 	addi $t0, $t0, 2						#aumentamos a la "otra fila", se asume que esta despues del enter
  	addi $s0, $s0, 1						#  aumenta fila
  	addi $s1, $zero, 1						#  reinciia columna
+ 	j bucleFila
+ 	
+cambiarColumna:
+ 	addi $t0, $t0, 1						#aumentamos al siguiente caracter de la sopa de letra	
  	j bucleFila
         
 calcularIndiceMovimiento: 						# se asume que es un valor constante
@@ -168,14 +182,16 @@ calcularIndiceMovimiento: 						# se asume que es un valor constante
 movernos:
  	
  	jal movernosDerecha
- 	bne $s6, $zero,  finalizar					# la encontro por la derecha
+ 	bne $s6, $zero,  finalizar					# la encontro por la derecha 	
  	jal movernosIzquierda
  	bne $s6, $zero,  finalizar
+ 	
+ 	beq $s6, $zero,  cambiarColumna
  	
  	#terminar y mostrar un mensaje de no se encuentra la palabra en la sopa de letras. 
  	j solicitarPalabras
  	#jal movernosArriba
- 	#jal movernosAbajo
+ 	#jal movernosAbajo cambiarColumna
 
 finalizar: 								# esta rutina puede hacer cualquier cosa, ejemplo, puede solicitar nuevmante palabras.
  	j solicitarPalabras	
@@ -282,6 +298,22 @@ noFinalPalabraBuscada:
                       
 exit: 	li $v0, 10							# Constante para terminar el programa
 	syscall
+
+palabraNoEncontrada:	li $v0, 4
+ 		la $a0, noEncontrada
+ 		syscall
+ 		
+ 		li $v0, 4
+ 		la $a0, buscarOtra
+ 		syscall
+ 		
+ 		li $v0, 8 							# read string,  
+    		la $a0, bufferPalabra						# $a0 = direcci�n del b�fer de entrada (la direcci�n de "buffer" apuntar� a las palabras)
+    		li $a1, 100							# $a1 = n�mero m�ximo de caracteres para leer
+    		syscall
+       
+    		la $t1, bufferPalabra						# guardamos la direcci�n la direcci�n de memoria en el cpu, en el registro $t1	
+    		add $s3, $t1, $zero	
         
         
         

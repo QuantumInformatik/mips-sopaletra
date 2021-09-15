@@ -25,8 +25,8 @@ public class GeneradorSopaLetra {
      */
    public static void main(String[] args) {
 
-        final int fila = 3;
-        final int columna = 4;
+        final int fila = 100;
+        final int columna = 100;
         int caracteerEntero;
         char caracterAleatorio;
         StringBuilder filaCaracteres = new StringBuilder();
