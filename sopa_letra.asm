@@ -198,7 +198,8 @@ movernos:
  	bne $s6, $zero,  finalizar					# la encontro por la derecha 	
  	jal movernosIzquierda
  	bne $s6, $zero,  finalizar
- 	
+ 	jal movernosArriba
+ 	bne $s6, $zero,  finalizar
  	beq $s6, $zero,  cambiarColumna
  	
  	#terminar y mostrar un mensaje de no se encuentra la palabra en la sopa de letras. 
@@ -259,9 +260,9 @@ movernosArriba:
  	addi $sp, $sp, -4 						# Reserva 2 palabras en pila (8 bytes)			
 	sw $ra, 0($sp) 							# guarda ra 
 
-	addi $t0, $t0, 1						# aumentamos indice para avanzar en las letras de la sopaletra
+	sub $t0, $t0, $t6						# aumentamos indice para avanzar en las letras de la sopaletra
  	lbu $t8, 0($t0)							# caracter siguiente de la sopaletra
- 	add  $t1, $t1, $t6						# aumentamos indece para avanzar en el caracter de la palabra a buscar
+ 	add  $t1, $t1, 1						# aumentamos indece para avanzar en el caracter de la palabra a buscar
  	lbu $t9, 0($t1)							# caracter siguiente de la palabra a buscar
  	
  	jal comprobarFinal
@@ -269,7 +270,7 @@ movernosArriba:
 	addi $sp, $sp, 4
  	
  	bne $s6, $zero, detallePalabra  				# hemos encontrado toda la palabra por la derecha 	
- 	beq $t8, $t9, movernosArriba
+ 	beq $t8, $t9, movernosArriba		# son diferentes es decir que no conincidieron en la letra n-sima
 
 	add $a0, $t2, $zero						# argumento de la funcion para saber desde donde reiniciar
  	j reiniciarIndices
