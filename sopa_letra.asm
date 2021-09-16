@@ -187,7 +187,7 @@ cambiarColumna:
  	j bucleFila
         
 calcularIndiceMovimiento: 						# se asume que es un valor constante
- 	addi $t6, $zero, 9 						# desplazamiento vertical
+ 	addi $t6, $zero, 201 						# desplazamiento vertical
  	addi $t7, $zero, 2 						# desplazameinto horizontal
  	
  	add $t2, $zero, $t0						# guardar dirección de descubrimiento
@@ -200,6 +200,10 @@ movernos:
  	bne $s6, $zero,  finalizar
  	jal movernosArriba
  	bne $s6, $zero,  finalizar
+ 	jal movernosAbajo
+ 	bne $s6, $zero,  finalizar			# las 4 rutinas de movernos (derecha, izquierda, arriba o abajo, pueden ser una dos o una sola subturina que reciba argumentos
+ 	
+ 	
  	beq $s6, $zero,  cambiarColumna
  	
  	#terminar y mostrar un mensaje de no se encuentra la palabra en la sopa de letras. 
@@ -274,6 +278,25 @@ movernosArriba:
 
 	add $a0, $t2, $zero						# argumento de la funcion para saber desde donde reiniciar
  	j reiniciarIndices
+ 	
+movernosAbajo:
+ 	addi $sp, $sp, -4 						# Reserva 2 palabras en pila (8 bytes)			
+	sw $ra, 0($sp) 							# guarda ra 
+
+	add $t0, $t0, $t6						# aumentamos indice para avanzar en las letras de la sopaletra
+ 	lbu $t8, 0($t0)							# caracter siguiente de la sopaletra
+ 	add  $t1, $t1, 1						# aumentamos indece para avanzar en el caracter de la palabra a buscar
+ 	lbu $t9, 0($t1)							# caracter siguiente de la palabra a buscar
+ 	
+ 	jal comprobarFinal
+ 	lw $ra, 0($sp) 							# restaurar ra
+	addi $sp, $sp, 4
+ 	
+ 	bne $s6, $zero, detallePalabra  				# hemos encontrado toda la palabra por la derecha 	
+ 	beq $t8, $t9, movernosAbajo		# son diferentes es decir que no conincidieron en la letra n-sima
+
+	add $a0, $t2, $zero						# argumento de la funcion para saber desde donde reiniciar
+ 	j reiniciarIndices
  
 comprobarFinal:
 
@@ -343,7 +366,7 @@ pedirMasPalabras:	addi $sp, $sp, -20 						# Reserva 2 palabras en pila (8 bytes
 		lb $t3, cons2		# Cargo el valor de n en la variable temporal $t3
 		
 		beq $t6, $t2, continuarBuscandoPalabras
-		bne $t6, $t2, opcionInvalida
+		bne $t6, $t3, opcionInvalida
 		li $v0, 4
  		la $a0, programaFinaliza
  		syscall
